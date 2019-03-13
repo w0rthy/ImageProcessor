@@ -114,14 +114,14 @@ abstract class ImageUtils {
         int height = r.getHeight();
         
         //Top Left Corner
-        double tlx = Math.max(x+0.5-rx, 0.0); //Absolute x pos of TL
-        double tly = Math.max(y+0.5-ry, 0.0); //Absolute y pos of TL
+        double tlx = Math.max(x-rx, 0.0); //Absolute x pos of TL
+        double tly = Math.max(y-ry, 0.0); //Absolute y pos of TL
         int tlxP = (int)tlx; //x Pixel of TL
         int tlyP = (int)tly; //y Pixel of TL
         
         //Bottom Right Corner
-        double brx = Math.min(x+0.5+rx, width); //Absolute x pos of BR
-        double bry = Math.min(y+0.5+ry, height); //Absolute y pos of BR (Instead of subtracting by epsilon, can reduce xP/yP by 1 if == width/height
+        double brx = Math.min(x+rx, width); //Absolute x pos of BR
+        double bry = Math.min(y+ry, height); //Absolute y pos of BR (Instead of subtracting by epsilon, can reduce xP/yP by 1 if == width/height
         int brxP = (int)Math.ceil(brx)-1; //x Pixel of BR
         int bryP = (int)Math.ceil(bry)-1; //y Pixel of BR
         
@@ -205,5 +205,10 @@ abstract class ImageUtils {
             }
         }
         return cm.resultArrInt();
+    }
+    
+    //When given an int position, move the origin of the call to the center of that pixel
+    static int[] avgColInArea(Raster r, int x, int y, double rx, double ry){
+        return avgColInArea(r, (double)x+0.5, (double)y+0.5, rx, ry);
     }
 }
