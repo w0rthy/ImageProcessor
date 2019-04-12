@@ -67,4 +67,9 @@ public abstract class ImageProcessor {
     public static BufferedImage maxLimitedClipContrastG(BufferedImage img, double gamma, double lim){
         return DynamicCorrection.maxLimitedClipContrast(img, lim, gamma);
     }
+    
+    //Returns a portion of an image resized to 'width' by 'height' and magnified by 'zoom' amt
+    public static BufferedImage zoom(BufferedImage img, int width, int height, int zx, int zy, double zoom){
+        return ImageResizer.zoom(img, width, height, zx, zy, zoom);
+    }
 }

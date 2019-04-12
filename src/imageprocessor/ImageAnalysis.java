@@ -2,6 +2,21 @@ package imageprocessor;
 
 import java.awt.image.Raster;
 
+//All component-wise analysis done here is based completely on the max of the R,G, and B components of pixels.
+//  The idea is that the maximum of the three components can be used to determine the intensity of that color.
+//  The ratios between the three components determines the color itself.
+//  That is, the color (100,50,0) is a less intense version of the color (200,100,0)
+//      (By this logic, Brown is a less intense version of Orange)
+//  
+//  Calculating the average max component will result in the average color intensity as opposed to calculating
+//      the average component value simply determines how 'white' an image is.
+//  My reasoning for this is that (255,0,0) is the brightest, most intense version of red that can be produced.
+//      Therefore, any pixel with this color should be considered as having maximum intensity so as not to
+//          penalize colors for not being a shade of grey.
+
+//TODO: All functions in this class will be replaced by simpler versions utilizing a new function which uses the
+//  ComponentAnalysis class to perform every analysis function in one run through an image. The simplified functions
+//      will merely have to return the correct information from the resulting object.
 abstract class ImageAnalysis {
     
     //Gets the max R,G, or B component in an image, at resolution res (1 = all pixels checked, 2 = half)
@@ -74,13 +89,13 @@ abstract class ImageAnalysis {
         //Find the correct val
         int target = (int)(count*amt);
         int sum = 0;
-        int at = 255;
+        int at = 256;
         
-        while(sum<target){
-            sum+=hist[at];
+        while(at>0 && sum<target){
             at--;
+            sum+=hist[at];
         }
-        return at+1;
+        return at>255?255:at; //Cap at 255
     }
     
     //Utilizes a provided lookup table, tab
@@ -109,43 +124,44 @@ abstract class ImageAnalysis {
         //Find the correct val
         int target = (int)(count*amt);
         int sum = 0;
-        int at = 255;
+        int at = 256;
         
-        while(sum<target){
-            sum+=hist[at];
+        while(at>0 && sum<target){
             at--;
+            sum+=hist[at];
         }
-        return at+1;
+        return at>255?255:at; //Cap at 255
     }
     
-    //Gets the average R,G, or B component value of raster 'r' at resolution 'res'
-    static int avgComponent(Raster r, int res){
+    //Gets the average max R,G, or B component value of raster 'r' at resolution 'res'
+    static double avgComponent(Raster r, int res){
         int width = r.getWidth();
         int height = r.getHeight();
         
         //Vars
         long sum = 0;
-        long count = ((width+res-1)/res)*((height+res-1)/res)*3; //Formula to replace manually counting
+        long count = ((width+res-1)/res)*((height+res-1)/res); //Formula to replace manually counting
         int[] tmp = new int[4];
         
         //Begin
         for(int x = 0; x < width; x+=res){
             for(int y = 0; y < height; y+=res){
                 r.getPixel(x, y, tmp);
-                sum+=tmp[0]+tmp[1]+tmp[2];
+                sum+=ImageUtils.colMaxComp(tmp);
+                //sum+=tmp[0]+tmp[1]+tmp[2];
             }
         }
-        return (int)(sum/count);
+        return (double)sum/(double)count;
     }
     
-    //Gets the average deviation of R,G, or B components of raster 'r' at resolution 'res' for provided average 'avg'
-    static int avgDevComponent(Raster r, int res, int avg){
+    //Gets the average deviation of R,G, or B component maximums of raster 'r' at resolution 'res' for provided average 'avg'
+    static double avgDevComponent(Raster r, int res, double avg){
         int width = r.getWidth();
         int height = r.getHeight();
         
         //Vars
-        long count = ((width+res-1)/res)*((height+res-1)/res)*3; //Formula to replace manually counting
-        long sum = 0;
+        double sum = 0;
+        long count = ((width+res-1)/res)*((height+res-1)/res); //Formula to replace manually counting
         int[] tmp = new int[4];
         
         //Begin
@@ -153,22 +169,23 @@ abstract class ImageAnalysis {
             for(int y = 0; y < height; y+=res){
                 r.getPixel(x, y, tmp);
                 //sum+=Math.abs(avg-tmp[0])+Math.abs(avg-tmp[1])+Math.abs(avg-tmp[2]);
-                sum+=Math.abs(tmp[0]+tmp[1]+tmp[2]-avg*3);
+                //sum+=Math.abs(tmp[0]+tmp[1]+tmp[2]-avg*3.0);
+                sum+=Math.abs(ImageUtils.colMaxComp(tmp)-avg);
             }
         }
-        return (int)(sum/count);
+        return sum/(double)count;
     }
     
     //Performs the average itself
-    static int avgDevComponent(Raster r, int res){
+    static double avgDevComponent(Raster r, int res){
         return avgDevComponent(r, res, avgComponent(r, res));
     }
     
     //Class to hold data collected when performing a componentAnalysis on an image
     class ComponentAnalysis {
         int max = 0; //The max component value
-        int avg = 0; //The average max component value (average color intensity)
-        int avgdev = 0; //The average deviation of max component values (color intensities)
+        double avg = 0; //The average max component value (average color intensity)
+        double avgdev = 0; //The average deviation of max component values (color intensities)
         int[] hist = null; //A histogram of max component values (color intensities)
     }
 }
