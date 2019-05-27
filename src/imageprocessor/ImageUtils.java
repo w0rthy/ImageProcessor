@@ -13,17 +13,17 @@ abstract class ImageUtils {
     
     //Sums 2 Colors (a+b)
     static int[] colSum(int[] a, int[] b){
-        return new int[] {a[0]+b[0],a[1]+b[1],a[2]+b[2],255};
+        return new int[] {a[0]+b[0],a[1]+b[1],a[2]+b[2],255}; //What to do with Alpha in these situations??
     }
     
     //Difference between 2 Colors (a-b)
     static int[] colDiff(int[] a, int[] b){
-        return new int[] {a[0]-b[0],a[1]-b[1],a[2]-b[2],255};
+        return new int[] {a[0]-b[0],a[1]-b[1],a[2]-b[2],255}; //What to do with Alpha in these situations??
     }
     
     //Scales a color 'a' by factor 'b'
     static int[] colScale(int[] a, double b){
-        return new int[] {(int)(a[0]*b),(int)(a[1]*b),(int)(a[2]*b),255};
+        return new int[] {(int)(a[0]*b),(int)(a[1]*b),(int)(a[2]*b),a[3]};
     }
     
     //Clamps RGB components of a to 0-255
@@ -36,7 +36,7 @@ abstract class ImageUtils {
         Math.min(Math.max(a[0], 0), 255),
         Math.min(Math.max(a[1], 0), 255),
         Math.min(Math.max(a[2], 0), 255),
-        255};
+        Math.min(Math.max(a[3], 0), 255)};
     }
     
     //Returns the max R,G,B component from color a
@@ -57,7 +57,7 @@ abstract class ImageUtils {
     
     //Applies a lookup table 'tab' to color 'c'
     static int[] applyLookupTable(int[] c, int[] tab){
-        return new int[] {tab[c[0]],tab[c[1]],tab[c[2]],255};
+        return new int[] {tab[c[0]],tab[c[1]],tab[c[2]],c[3]};
     }
     
     //Constructs a lookup table with no mutations
